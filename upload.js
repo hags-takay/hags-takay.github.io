@@ -18,7 +18,7 @@ uploadForm.addEventListener('submit', async (event) => {
         return;
     }
 
-    const cloudName = 'dpbk9sbej'; // Your Cloudinary cloud name
+    const cloudName = 'pbk9sbej'; // Your Cloudinary cloud name
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`; // Cloudinary upload endpoint
     const formData = new FormData();
 
