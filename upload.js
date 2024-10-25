@@ -18,7 +18,7 @@ uploadForm.addEventListener('submit', async (event) => {
         return;
     }
 
-    const cloudName = 'dpbk9sbej'; // Your Cloudinary cloud name
+    const cloudName = 'pbk9sbej'; // Your Cloudinary cloud name
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`; // Cloudinary upload endpoint
     const formData = new FormData();
 
@@ -51,8 +51,6 @@ function displayImage(imageUrl) {
     const img = document.createElement('img'); // Create an image element
     img.src = imageUrl; // Set the source to the uploaded image URL
     img.alt = 'Uploaded Image'; // Add alt text
-    img.style.maxWidth = '300px'; // Set a max width for display
-    img.style.marginTop = '10px'; // Add some spacing
     imageContainer.appendChild(img); // Append the image to the container
 }
 
