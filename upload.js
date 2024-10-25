@@ -1,4 +1,11 @@
 const uploadForm = document.getElementById('uploadForm');
+const imageContainer = document.getElementById('imageContainer');
+
+// Load images from local storage when the page loads
+window.onload = () => {
+    const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+    uploadedImages.forEach(url => displayImage(url));
+};
 
 uploadForm.addEventListener('submit', async (event) => {
     event.preventDefault(); // Prevent default form submission
@@ -29,6 +36,7 @@ uploadForm.addEventListener('submit', async (event) => {
         if (data.secure_url) {
             alert('Image uploaded successfully: ' + data.secure_url);
             displayImage(data.secure_url); // Call the function to display the image
+            saveImageUrl(data.secure_url); // Save the URL to local storage
         } else {
             alert('Upload failed: ' + JSON.stringify(data)); // Log the entire data object
         }
@@ -40,13 +48,17 @@ uploadForm.addEventListener('submit', async (event) => {
 
 // Function to display the uploaded image
 function displayImage(imageUrl) {
-    const imageContainer = document.createElement('div'); // Create a container for the image
     const img = document.createElement('img'); // Create an image element
     img.src = imageUrl; // Set the source to the uploaded image URL
     img.alt = 'Uploaded Image'; // Add alt text
     img.style.maxWidth = '300px'; // Set a max width for display
     img.style.marginTop = '10px'; // Add some spacing
-
     imageContainer.appendChild(img); // Append the image to the container
-    document.body.appendChild(imageContainer); // Append the container to the body or a specific section
+}
+
+// Function to save the image URL to local storage
+function saveImageUrl(url) {
+    const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+    uploadedImages.push(url);
+    localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
 }
