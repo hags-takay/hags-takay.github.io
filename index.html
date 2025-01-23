@@ -9,6 +9,14 @@
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+   
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600&display=swap" rel="stylesheet"> 
@@ -36,11 +44,13 @@
         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
             <div class="navbar-nav ml-auto py-0">
                 <a href="#story" class="nav-item nav-link">Message</a>
+                <a href="#polaroid" class="nav-item nav-link">Polaroid</a>
             </div>
             <a href="index.html" class="navbar-brand mx-5 d-none d-lg-block">
                 <h1 class="font-secondary text-white mb-n2">Hags <span class="text-primary">&</span> Jayson</h1>
             </a>
             <div class="navbar-nav mr-auto py-0">
+                <a href="#memory-map-section" class="nav-item nav-link">Travel</a>
                 <a href="#gallery" class="nav-item nav-link">Gallery</a>
             </div>
         </div>
@@ -116,7 +126,6 @@
     <div class="container-fluid py-5" id="story">
         <div class="container pt-5 pb-3">
             <div class="section-title position-relative text-center">
-                <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Message</h6>
                 <h1 class="font-secondary display-4">Short Message</h1>
                 <i class="far fa-heart text-dark"></i>
             </div>
@@ -174,43 +183,78 @@
     </div>
     <!-- Story End -->
 
- <!-- UPLOAD PHOTO -->
+<!-- CLOUDINARY UPLOAD START -->
 
-
-
+<div id= "polaroid" class="container pt-5 pb-3" >
     
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Upload Image</title>
-     <style>
-         #imageContainer {
-             display: flex;
-             flex-wrap: wrap;
-             gap: 10px;
-         }
-         img {
-             max-width: 300px;
-             border: 1px solid #ccc;
-         }
-     </style>
- </head>
- <body>
-     <h1>Upload an Image</h1>
-     <form id="uploadForm">
-         <input type="file" id="fileInput" accept="image/*" required>
-         <button type="submit">Upload</button>
-     </form>
-     <div id="imageContainer"></div> <!-- Container for displaying uploaded images -->
-     <script src="upload.js"></script>
- </body>
- </html>
- 
- 
- 
- 
+    <div class="section-title position-relative text-center">
+    <h1 class="font-secondary display-4">Polaroid Pin</h1>
+    <i class="far fa-heart text-dark"></i>
+</div>
+    &nbsp;
+
+    <!-- Section where images will be displayed -->
+    <div id="imageContainer" class="image-container" style="background-image: url('images/crumpled.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;"></div>
+
+
+    &nbsp;
+<!-- Form for uploading images -->
+<form id="uploadForm" class="upload-form">
+    <div class="file-upload-container">
+        <label for="fileInput" class="upload-label">Upload image:</label>
+        <input type="file" id="fileInput" name="file" accept="image/*" required class="file-input" multiple>
+        <div class="caption-container">
+            <label for="captionInput" class="caption-label"></label>
+            <input type="text" id="captionInput" name="caption" placeholder="Enter a caption (optional)" class="caption-input" maxlength="20">
+            &nbsp;
+    </div>
+    
+    </div>
+    <button type="submit" class="upload-button">Pin</button>
+</form>
+
+    <!-- Clear All Images Button -->
+    <button id="clearButton" class="clear-button" hidden>Clear All Images</button>
+
+</div>
+
+<!-- Lightbox container to display clicked image in full -->
+<div id="lightbox" class="lightbox">
+    <span class="close-lightbox">&times;</span>
+    <img id="lightboxImage" class="lightbox-content" />
+    <button id="deleteLightboxButton" class="delete-button" style="display:none;">Delete</button>
+    <button id="prevButton" class="lightbox-arrow prev-arrow">&#10094;</button>
+    <button id="nextButton" class="lightbox-arrow next-arrow">&#10095;</button>
+</div>
+
+
+
+<script src="upload.js"></script> <!-- Link to your JavaScript file -->
+
+<!-- Memory Map Section -->
+<section id="memory-map-section" class="container2 pt-5">
+    <div class="section-title position-relative text-center">
+        
+    <h1 class="font-secondary display-4">Pinning our Memories</h1>
+    <i class="far fa-heart text-dark"></i>
+</div>
+    <!-- Create a container for the map and sidebar -->
+    <div id="map-container" style="display: flex; height: 600px;">
+
+        <!-- Sidebar Section -->
+        <div id="sidebar" style="width: 300px; background-color: #f0f0f0; padding: 10px;">
+            <h3>Locations</h3>
+            <ul id="locations-list"></ul> <!-- List of locations will be dynamically added here -->
+        </div>
+
+        <!-- Map Section -->
+        <div id="memory-map" style="flex-grow: 2;"></div> <!-- This is where the map will be rendered -->
+    </div>
+</section>
+
+  
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> <!-- Leaflet JS -->
+    <script src="map.js"></script>    <!-- Your custom map.js file -->
 
 
     <!-- Gallery Start -->
@@ -223,39 +267,21 @@
         <div class="owl-carousel gallery-carousel">
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (7).jpg" alt="">
-                <a href="images/image (7).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (4).jpg" alt="">
-                <a href="images/image (4).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (9).jpg" alt="">
-                <a href="images/image (9).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (6).jpg" alt="">
-                <a href="images/image (6).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (5).jpg" alt="">
-                <a href="images/image (5).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
             <div class="gallery-item">
                 <img class="img-fluid w-100" src="images/image (16).jpg" alt="">
-                <a href="images/image (16).jpg" data-lightbox="gallery">
-                    <i class="fa fa-2x fa-plus text-white"></i>
-                </a>
             </div>
         </div>
     </div>
@@ -265,7 +291,7 @@
     <div class="container-fluid bg-dark text-white py-5" id="contact" style="margin-top: 90px;">
         <div class="container text-center py-5">
             <div class="section-title position-relative text-center">
-                <h1 class="font-secondary display-3 text-white">Saying 'yes' to you was the best and happiest decision I've ever made.</h1>
+                <h1 class="font-secondary display-3 text-white"></h1>
                 <i class="far fa-heart text-white"></i>
             </div>
         </div>
@@ -291,6 +317,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    
 </body>
 
 </html>
