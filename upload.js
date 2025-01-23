@@ -137,7 +137,7 @@ function displayImage(imageUrl, caption, index) {
     // Create a caption element
     const captionElement = document.createElement('p');
     captionElement.classList.add('image-caption');
-    captionElement.textContent = caption || 'No caption provided';
+    captionElement.textContent = caption || '';
 
     // Append the pin (first), image, and caption (last) to the container
     imgContainer.appendChild(pin); // Pin first to be on top
