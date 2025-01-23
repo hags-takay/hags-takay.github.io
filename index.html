@@ -205,13 +205,16 @@
         <input type="file" id="fileInput" name="file" accept="image/*" required class="file-input" multiple>
         <div class="caption-container">
             <label for="captionInput" class="caption-label"></label>
-            <input type="text" id="captionInput" name="caption" placeholder="Enter a caption (optional)" class="caption-input" maxlength="20">
+            <input type="text" id="captionInput" name="caption" placeholder="Enter a caption" class="caption-input" maxlength="20" required>
             &nbsp;
     </div>
     
     </div>
     <button type="submit" class="upload-button">Pin</button>
 </form>
+
+<!-- <button id="authButton" onclick="redirectToImgurAuth()">Authenticate with Imgur</button> -->
+
 
     <!-- Clear All Images Button -->
     <button id="clearButton" class="clear-button" hidden>Clear All Images</button>

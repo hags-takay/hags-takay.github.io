@@ -6,16 +6,21 @@ const closeLightboxBtn = document.getElementsByClassName('close-lightbox')[0];
 const prevButton = document.getElementById('prevButton');
 const nextButton = document.getElementById('nextButton');
 const clearButton = document.getElementById('clearButton');
-const deleteLightboxButton = document.getElementById('deleteLightboxButton'); // The delete button in the lightbox
+const deleteLightboxButton = document.getElementById('deleteLightboxButton'); // Delete button in the lightbox
 
-// Track uploaded images (including filenames, URLs, and captions)
+// Imgur settings
+const clientId = '6b16609b62fa8dd'; // Replace with your Imgur Client ID
+
+// Hardcoded access token
+const accessToken = 'a8c4c53e7ed3f43cbc491a276a1e23b11f61214f'; // Your hardcoded access token here
+
+// Track uploaded images
 let uploadedImages = [];
 let currentIndex = -1;
 
-// Load images from local storage when the page loads
-window.onload = () => {
-    uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
-    uploadedImages.forEach((image, index) => displayImage(image.url, image.caption, index));
+// Fetch and display images from Imgur when the page loads
+window.onload = async () => {
+    await fetchAndDisplayImages();
 };
 
 // Handle form submission (image upload)
@@ -23,7 +28,7 @@ uploadForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const fileInput = document.getElementById('fileInput');
-    const captionInput = document.getElementById('captionInput'); // New: Capture caption input
+    const captionInput = document.getElementById('captionInput');
     const files = fileInput.files;
 
     if (files.length === 0) {
@@ -31,84 +36,114 @@ uploadForm.addEventListener('submit', async (event) => {
         return;
     }
 
-    const caption = captionInput.value.trim(); // Get the entered caption (optional)
+    const caption = captionInput.value.trim();
 
-    // Disable the form to prevent multiple submissions during the upload process
+    // Disable the form during upload
     uploadForm.querySelector('button').disabled = true;
 
-    // Loop through all selected files
-    const uploadPromises = [];
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Check if the file has already been uploaded by comparing filenames
-        const isDuplicate = uploadedImages.some(image => image.filename === file.name);
-
-        if (isDuplicate) {
-            alert('This image has already been uploaded. Skipping...');
-            continue; // Skip uploading the duplicate file
-        }
-
-        const uploadPromise = new Promise((resolve, reject) => {
-            uploadToCloudinary(file, caption, resolve, reject);
-        });
-
-        uploadPromises.push(uploadPromise);
-    }
-
-    // Wait for all images to be uploaded
+    // Upload each image to Imgur
+    const uploadPromises = Array.from(files).map((file) => uploadToImgur(file, caption));
     await Promise.all(uploadPromises);
 
-    // Clear the file input and caption field after successful upload
+    // Clear inputs
     fileInput.value = '';
     captionInput.value = '';
 
-    // Re-enable the upload button after the uploads are finished
     uploadForm.querySelector('button').disabled = false;
+
+    // Refresh gallery
+    await fetchAndDisplayImages();
 });
 
-// Function to upload the image to Cloudinary
-async function uploadToCloudinary(file, caption, resolve, reject) {
-    const cloudName = 'dpbk9sbej';
-    const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+// Upload an image to Imgur
+async function uploadToImgur(file, caption) {
+    const url = 'https://api.imgur.com/3/image';
     const formData = new FormData();
+    formData.append('image', file);
+    if (caption) {
+        formData.append('title', caption);
+    }
 
-    formData.append('file', file);
-    formData.append('upload_preset', 'hags_preset');
-    formData.append('folder', 'uploads');
+    if (!accessToken) {
+        alert('Please authenticate first!');
+        return;
+    }
 
     try {
         const response = await fetch(url, {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,  // Use the hardcoded access token
+            },
             body: formData,
         });
 
         const data = await response.json();
 
-        if (data.secure_url) {
-            const uploadedData = {
-                filename: file.name,
-                url: data.secure_url,
-                caption: caption || '' // Default caption if none is provided
-            };
-            uploadedImages.push(uploadedData);
-            saveImageUrls(uploadedImages);
-            displayImage(data.secure_url, caption, uploadedImages.length - 1);
-            resolve(); // Resolve the promise after upload completes
-        } else {
-            console.error('Upload failed:', data); // Log error response
-            reject('Upload failed');
+        // Log the response to debug
+        console.log('Upload Response:', data);
+
+        if (!data.data || !data.data.link) {
+            throw new Error('Failed to upload image to Imgur');
         }
+
+        // Store the image link and caption in the uploadedImages array
+        uploadedImages.push({
+            id: data.data.id, 
+            url: data.data.link,
+            caption: caption || ''
+        });
     } catch (error) {
-        console.error('Error:', error);
-        reject(error);
+        console.error('Upload error:', error);
+        alert('Error uploading image. Please try again.');
     }
 }
 
+// Fetch images from Imgur and display them
+async function fetchAndDisplayImages() {
+    if (!accessToken) {
+        alert('Please authenticate first!');
+        return;
+    }
+
+    const url = 'https://api.imgur.com/3/account/me/images';
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,  // Use the hardcoded access token
+            },
+        });
+
+        const data = await response.json();
+
+        // Log the fetched data for debugging
+        console.log('Fetched Images:', data);
+
+        if (!data.data || data.data.length === 0) {
+            throw new Error('No images found on Imgur');
+        }
+
+        uploadedImages = data.data.map((image) => ({
+            url: image.link,
+            caption: image.title || '',
+            id: image.id, // Make sure to include image id
+        }));
+
+        imageContainer.innerHTML = ''; // Clear existing images
+        uploadedImages.forEach((image, index) => displayImage(image.url, image.caption, index));
+    } catch (error) {
+        console.error('Error fetching images:', error);
+        alert('Error fetching images. Please try again later.');
+    }
+}
+
+// Display an image in the gallery
 function displayImage(imageUrl, caption, index) {
     const imgContainer = document.createElement('div');
     imgContainer.classList.add('image-wrapper');
-    imgContainer.style.position = 'relative'; // Keeps position relative to allow absolute positioning
+    imgContainer.style.position = 'relative';
 
     const img = document.createElement('img');
     img.src = imageUrl;
@@ -120,80 +155,51 @@ function displayImage(imageUrl, caption, index) {
     const randomTopMargin = Math.floor(Math.random() * 30) - 15;
     const randomLeftMargin = Math.floor(Math.random() * 30) - 15;
 
-    // Set random rotation and margins to the wrapper (affects both image and caption)
     imgContainer.style.transform = `rotate(${randomRotate}deg)`;
     imgContainer.style.marginTop = `${randomTopMargin}px`;
     imgContainer.style.marginLeft = `${randomLeftMargin}px`;
 
-    // Create a pin element
     const pin = document.createElement('div');
     pin.classList.add('pin');
     pin.style.backgroundImage = "url('images/pin.png')";
     pin.style.position = 'absolute';
-    pin.style.top = '10px'; // Pin position from the top of the image
-    pin.style.left = '50%'; // Center the pin horizontally
-    pin.style.transform = 'translateX(-50%)'; // Center it exactly
+    pin.style.top = '10px';
+    pin.style.left = '50%';
+    pin.style.transform = 'translateX(-50%)';
 
-    // Create a caption element
     const captionElement = document.createElement('p');
     captionElement.classList.add('image-caption');
     captionElement.textContent = caption || '';
 
-    // Append the pin (first), image, and caption (last) to the container
-    imgContainer.appendChild(pin); // Pin first to be on top
-    imgContainer.appendChild(img);  // Image next
-    imgContainer.appendChild(captionElement); // Caption last
+    imgContainer.appendChild(pin);
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(captionElement);
 
-    // Open lightbox on image click
     img.onclick = () => openLightbox(imageUrl, index);
 
-    // Append the image container to the main container
     imageContainer.appendChild(imgContainer);
 }
 
-
-// Function to save the image URLs and captions to localStorage
-function saveImageUrls(urls) {
-    localStorage.setItem('uploadedImages', JSON.stringify(urls));
-}
-
-// Clear button functionality
-clearButton.onclick = () => {
-    console.log('Clear button clicked'); // Debugging message
-    // Clear the displayed images
-    imageContainer.innerHTML = '';
-
-    // Clear the uploaded images array and localStorage
-    uploadedImages = [];
-    localStorage.removeItem('uploadedImages'); // Remove item directly from localStorage
-};
-
-// Lightbox functionality: Open lightbox on image click
+// Lightbox functionality
 function openLightbox(imageUrl, index) {
-    lightbox.style.display = 'flex'; // Show the lightbox
-    lightboxImage.src = imageUrl; // Set the lightbox image source to the clicked image URL
-
-    currentIndex = index; // Store the current index for navigation
-
-    // Show the delete button in lightbox
+    lightbox.style.display = 'flex';
+    lightboxImage.src = imageUrl;
+    currentIndex = index;
     deleteLightboxButton.style.display = 'block';
 }
 
-// Function to close the lightbox
 closeLightboxBtn.onclick = () => {
-    lightbox.style.display = 'none'; // Hide the lightbox
-    deleteLightboxButton.style.display = 'none'; // Hide the delete button when the lightbox is closed
+    lightbox.style.display = 'none';
+    deleteLightboxButton.style.display = 'none';
 };
 
-// Allow closing the lightbox by clicking anywhere outside the image
 lightbox.onclick = (event) => {
     if (event.target === lightbox) {
-        lightbox.style.display = 'none'; // Hide the lightbox when clicking outside the image
-        deleteLightboxButton.style.display = 'none'; // Hide the delete button
+        lightbox.style.display = 'none';
+        deleteLightboxButton.style.display = 'none';
     }
 };
 
-// Function to navigate to the previous image
 prevButton.onclick = () => {
     if (currentIndex > 0) {
         currentIndex--;
@@ -201,7 +207,6 @@ prevButton.onclick = () => {
     }
 };
 
-// Function to navigate to the next image
 nextButton.onclick = () => {
     if (currentIndex < uploadedImages.length - 1) {
         currentIndex++;
@@ -210,18 +215,37 @@ nextButton.onclick = () => {
 };
 
 // Function to delete the image in lightbox
-deleteLightboxButton.onclick = () => {
-    // Remove the image from the DOM
-    const imageContainerToRemove = imageContainer.children[currentIndex];
-    imageContainer.removeChild(imageContainerToRemove);
+// Function to delete the image in lightbox
+deleteLightboxButton.onclick = async () => {
+    const imageId = uploadedImages[currentIndex].id;  // Get the image ID
 
-    // Remove the image from the uploadedImages array
-    uploadedImages.splice(currentIndex, 1);
+    try {
+        console.log(`Attempting to delete image with ID: ${imageId}`);  // Debug log
+        const response = await fetch(`https://api.imgur.com/3/image/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,  // Use the hardcoded access token
+            },
+        });
 
-    // Save the updated array to localStorage
-    saveImageUrls(uploadedImages);
+        const data = await response.json();
+        console.log('Delete response:', data);  // Log response for debugging
 
-    // Close the lightbox after deletion
-    lightbox.style.display = 'none';
-    deleteLightboxButton.style.display = 'none';
+        if (data.success) {
+            alert('Image deleted successfully!');
+            uploadedImages.splice(currentIndex, 1);  // Remove the image from the array
+            imageContainer.innerHTML = '';  // Clear the gallery
+            uploadedImages.forEach((image, index) => displayImage(image.url, image.caption, index));
+            
+            // Close the lightbox after deletion
+            lightbox.style.display = 'none';
+            deleteLightboxButton.style.display = 'none';
+        } else {
+            alert('Failed to delete image!');
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Error deleting image. Please try again.');
+    }
 };
+
