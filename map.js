@@ -48,7 +48,7 @@ function openPopup(lat, lng, event) {
 addMarkerAndListItem(10.3157, 123.8854, "Cebu City, Cebu", "August 2023", "images/cebucity.jpg");
 addMarkerAndListItem(9.6105, 123.4025, "Oslob, Cebu", "August 2023", "images/oslob.jpg");
 addMarkerAndListItem(16.4133, 122.2178, "Dingalan, Aurora", "March 2024", "images/aurora.jpg");
-addMarkerAndListItem(9.7407, 118.7301, "Puerto Princesa, Palawan", "August 2024", "images/puertoprincesa.jpg");
-addMarkerAndListItem(11.1956, 119.4075, "El Nido, Palawan", "August 2024", "images/elnido.jpg");
+addMarkerAndListItem(9.7407, 118.7301, "Puerto Princesa, Palawan", "August 2024", "images/puertoprincesa.JPG");
+addMarkerAndListItem(11.1956, 119.4075, "El Nido, Palawan", "August 2024", "images/elnido.JPG");
 addMarkerAndListItem(17.0853, 120.9029, "Sagada", "November 2024", "images/sagada.jpg");
 addMarkerAndListItem(16.4164, 120.5931, "Baguio City", "November 2024", "images/baguio.jpg");
