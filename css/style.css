@@ -9,6 +9,14 @@
  /* General Layout */
 
  
+
+ /* Ensure the video is responsive and doesn't overlap */
+.responsive-video {
+  width: 100%; /* Makes the video take full width of its container */
+  height: auto; /* Keeps the aspect ratio intact */
+  max-width: 800px; /* Optional: Sets a max width to prevent the video from becoming too large */
+}
+
 .container {
   text-align: center;
   background-color: rgba(255, 255, 255, 0.5);
